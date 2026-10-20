@@ -35,6 +35,7 @@ jobs:
           conda-remove-defaults: true
       - name: Install
         run: |
+          set +e
           set -ux
           ( set -ex
             conda install -y -c conda-forge --override-channels compilers geant4=11.3.2 simple-build-system ncrystal mcpl numpy zlib
