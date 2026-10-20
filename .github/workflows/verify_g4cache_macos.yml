@@ -1,0 +1,51 @@
+# TEMPORARY workflow (not for merging): Verify on macOS that the G4Launcher fix
+# for https://github.com/mctools/simplebuild-dgcode/issues/44 removes the
+# "mutex lock failure in ~G4Cache" messages. Uses Geant4 11.3.2, since the
+# messages are no longer printed in Geant4 11.4.x.
+name: verify-g4cache-macos
+on: push
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: macos-latest,   label: main, ref: 84c50da11264897e5a6ab6ec1275266218eb0972 }
+          - { os: macos-latest,   label: fix,  ref: aabe733061ad9901a94da408873442f0da4851fb }
+          - { os: macos-15-intel, label: main, ref: 84c50da11264897e5a6ab6ec1275266218eb0972 }
+          - { os: macos-15-intel, label: fix,  ref: aabe733061ad9901a94da408873442f0da4851fb }
+          - { os: ubuntu-latest,  label: main, ref: 84c50da11264897e5a6ab6ec1275266218eb0972 }
+          - { os: ubuntu-latest,  label: fix,  ref: aabe733061ad9901a94da408873442f0da4851fb }
+    name: ${{ matrix.os }}.${{ matrix.label }}
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.ref }}
+          path: ./src_co
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniforge-version: latest
+          activate-environment: g4verify
+          python-version: '3.12'
+      - name: Install
+        run: |
+          set -eux
+          conda install -y -c conda-forge compilers geant4=11.3.2 simple-build-system ncrystal mcpl numpy zlib
+          python3 -m pip install --no-deps ./src_co
+          geant4-config --version
+      - name: Build and run mcplwrite
+        run: |
+          set -eux
+          mkdir sbproj && cd sbproj
+          printf "[depend]\n  bundles = ['dgcode_val']\n[build]\n  pkg_filter = ['G4MCPLTests']\n" > simplebuild.cfg
+          sb -j4
+          sbenv sb_g4mcpltests_mcplwrite > out.log 2>&1 || ( tail -50 out.log; exit 1 )
+          tail -5 out.log
+          N=$(grep -c 'mutex lock failure' out.log || true)
+          echo "RESULT ${{ matrix.os }} ${{ matrix.label }}: ${N} 'mutex lock failure' messages"
+          echo "### ${{ matrix.os }} ${{ matrix.label }}: ${N} 'mutex lock failure' messages" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ matrix.label }}" == "fix" ]; then test "$N" == "0"; fi
