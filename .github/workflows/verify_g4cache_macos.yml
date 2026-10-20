@@ -42,7 +42,8 @@ jobs:
             geant4-config --version ) > install.log 2>&1
           ec=$?
           if [ $ec != 0 ]; then
-            { echo '### Install failed, last lines of output:'; echo '```'; tail -40 install.log; echo '```'; } >> $GITHUB_STEP_SUMMARY
+            msg=$(tail -25 install.log | cut -c1-200 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
+            echo "::error title=install failed::${msg}"
             tail -100 install.log
             exit $ec
           fi
