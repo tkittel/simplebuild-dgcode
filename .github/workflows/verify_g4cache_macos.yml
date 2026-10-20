@@ -31,10 +31,12 @@ jobs:
           miniforge-version: latest
           activate-environment: g4verify
           python-version: '3.12'
+          channels: conda-forge
+          conda-remove-defaults: true
       - name: Install
         run: |
           set -eux
-          conda install -y -c conda-forge compilers geant4=11.3.2 simple-build-system ncrystal mcpl numpy zlib
+          conda install -y -c conda-forge --override-channels compilers geant4=11.3.2 simple-build-system ncrystal mcpl numpy zlib
           python3 -m pip install --no-deps ./src_co
           geant4-config --version
       - name: Build and run mcplwrite
