@@ -37,13 +37,16 @@ jobs:
         run: |
           set +e
           set -ux
-          ( set -ex
-            conda install -y -c conda-forge --override-channels compilers geant4=11.3.2 simple-build-system ncrystal mcpl numpy zlib
+          ( set -e
+            echo "STEP: conda install"
+            conda install -y -q -c conda-forge --override-channels compilers geant4=11.3.2 simple-build-system ncrystal mcpl numpy zlib
+            echo "STEP: pip install"
             python3 -m pip install --no-deps ./src_co
+            echo "STEP: geant4-config"
             geant4-config --version ) > install.log 2>&1
           ec=$?
           if [ $ec != 0 ]; then
-            msg=$(tail -25 install.log | cut -c1-200 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
+            msg=$(grep -v -E '^\+' install.log | tail -25 | cut -c1-200 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
             echo "::error title=install failed::${msg}"
             tail -100 install.log
             exit $ec
