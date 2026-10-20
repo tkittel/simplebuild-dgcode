@@ -93,6 +93,31 @@ index 5ee7646..06333fe 100644
  
    //Reorder in different map with element names as keys for reproducibility so
    //order of addElement calls won't depend on pointer sorting (at least not when
+diff --git a/src/simplebuild_dgcode/data/pkgs/Griff/EvtFile/libinc/DBEntryWriter.hh b/src/simplebuild_dgcode/data/pkgs/Griff/EvtFile/libinc/DBEntryWriter.hh
+index 5e1c2cb..c3d0aee 100644
+--- a/src/simplebuild_dgcode/data/pkgs/Griff/EvtFile/libinc/DBEntryWriter.hh
++++ b/src/simplebuild_dgcode/data/pkgs/Griff/EvtFile/libinc/DBEntryWriter.hh
+@@ -29,7 +29,7 @@ namespace EvtFile {
+     DBEntryWriter( DBEntryWriter&& ) = delete;
+     DBEntryWriter& operator=( DBEntryWriter&& ) = delete;
+ 
+-    virtual ~DBEntryWriter();
++    ~DBEntryWriter();
+ 
+     virtual std::uint16_t uniqueSubSectionID() const { return m_subSectionID; }
+ 
+diff --git a/src/simplebuild_dgcode/data/pkgs/Griff/GriffDataRead/libinc/Setup.hh b/src/simplebuild_dgcode/data/pkgs/Griff/GriffDataRead/libinc/Setup.hh
+index 1a89340..7b01a47 100644
+--- a/src/simplebuild_dgcode/data/pkgs/Griff/GriffDataRead/libinc/Setup.hh
++++ b/src/simplebuild_dgcode/data/pkgs/Griff/GriffDataRead/libinc/Setup.hh
+@@ -6,6 +6,7 @@
+ #include "Utils/StringSort.hh"
+ #include <string>
+ #include <map>
++#include <cstdlib>
+ 
+ class GriffDataReader;
+ namespace GriffDataRead
 diff --git a/src/simplebuild_dgcode/data/pkgs_val/BoronTube/G4GeoBoronTube/pycpp_GeoBoronTube/geometry_module.cc b/src/simplebuild_dgcode/data/pkgs_val/BoronTube/G4GeoBoronTube/pycpp_GeoBoronTube/geometry_module.cc
 index e2497be..10656c6 100644
 --- a/src/simplebuild_dgcode/data/pkgs_val/BoronTube/G4GeoBoronTube/pycpp_GeoBoronTube/geometry_module.cc
@@ -135,3 +160,15 @@ index 5da19cf..b1faf14 100644
                                      + sample_radius+det_depth+det_sample_dist );
    const double dxy_world = 1.001 * std::max<double>(0.5*det_size,sample_radius);
    auto worldvols = place( new G4Box("World", dxy_world, dxy_world, dz_world),
+diff --git a/src/simplebuild_dgcode/data/pkgs_val/UnitTests/MeshTests/app_test/main.cc b/src/simplebuild_dgcode/data/pkgs_val/UnitTests/MeshTests/app_test/main.cc
+index 9ca99ab..cf1f309 100644
+--- a/src/simplebuild_dgcode/data/pkgs_val/UnitTests/MeshTests/app_test/main.cc
++++ b/src/simplebuild_dgcode/data/pkgs_val/UnitTests/MeshTests/app_test/main.cc
+@@ -1,6 +1,7 @@
+ #include "Core/Types.hh"
+ #include "Mesh/MeshFiller.hh"
+ #include "MeshTests/_tempworkarounds2.hh"
++#include <cstdlib>
+ 
+ namespace {
+   template <class T> double expected_precision() { return 2.0e-12; }
