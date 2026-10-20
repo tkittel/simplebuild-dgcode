@@ -58,9 +58,10 @@ jobs:
           mkdir sbproj && cd sbproj
           printf "[depend]\n  bundles = ['dgcode_val']\n[build]\n  pkg_filter = ['G4MCPLTests']\n" > simplebuild.cfg
           sb -j4
-          sbenv sb_g4mcpltests_mcplwrite > out.log 2>&1 || ( tail -50 out.log; exit 1 )
+          sbenv sb_g4mcpltests_mcplwrite > out.log 2>&1 || { msg=$(tail -25 out.log | cut -c1-200 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}'); echo "::error title=mcplwrite failed::${msg}"; exit 1; }
           tail -5 out.log
           N=$(grep -c 'mutex lock failure' out.log || true)
           echo "RESULT ${{ matrix.os }} ${{ matrix.label }}: ${N} 'mutex lock failure' messages"
           echo "### ${{ matrix.os }} ${{ matrix.label }}: ${N} 'mutex lock failure' messages" >> $GITHUB_STEP_SUMMARY
+          echo "::notice title=result::${{ matrix.os }} ${{ matrix.label }}: ${N} 'mutex lock failure' messages"
           if [ "${{ matrix.label }}" == "fix" ]; then test "$N" == "0"; fi
