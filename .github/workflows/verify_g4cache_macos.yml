@@ -35,10 +35,17 @@ jobs:
           conda-remove-defaults: true
       - name: Install
         run: |
-          set -eux
-          conda install -y -c conda-forge --override-channels compilers geant4=11.3.2 simple-build-system ncrystal mcpl numpy zlib
-          python3 -m pip install --no-deps ./src_co
-          geant4-config --version
+          set -ux
+          ( set -ex
+            conda install -y -c conda-forge --override-channels compilers geant4=11.3.2 simple-build-system ncrystal mcpl numpy zlib
+            python3 -m pip install --no-deps ./src_co
+            geant4-config --version ) > install.log 2>&1
+          ec=$?
+          if [ $ec != 0 ]; then
+            { echo '### Install failed, last lines of output:'; echo '```'; tail -40 install.log; echo '```'; } >> $GITHUB_STEP_SUMMARY
+            tail -100 install.log
+            exit $ec
+          fi
       - name: Build and run mcplwrite
         run: |
           set -eux
