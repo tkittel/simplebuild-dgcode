@@ -35,8 +35,9 @@ jobs:
           conda-remove-defaults: true
       - name: Install
         run: |
-          set +e
-          set -ux
+          #NB: no set -u, which breaks conda activation scripts of geant4-data packages
+          set +eu
+          set -x
           ( set -e
             echo "STEP: conda install"
             conda install -y -q -c conda-forge --override-channels compilers geant4=11.3.2 simple-build-system ncrystal mcpl numpy zlib
@@ -53,7 +54,7 @@ jobs:
           fi
       - name: Build and run mcplwrite
         run: |
-          set -eux
+          set -ex
           mkdir sbproj && cd sbproj
           printf "[depend]\n  bundles = ['dgcode_val']\n[build]\n  pkg_filter = ['G4MCPLTests']\n" > simplebuild.cfg
           sb -j4
