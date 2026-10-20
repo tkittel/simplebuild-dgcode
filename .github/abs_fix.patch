@@ -1,0 +1,137 @@
+diff --git a/src/simplebuild_dgcode/data/pkgs/G4/G4OSG/libsrc/EventHandler.cc b/src/simplebuild_dgcode/data/pkgs/G4/G4OSG/libsrc/EventHandler.cc
+index 1da47cc..88db37c 100644
+--- a/src/simplebuild_dgcode/data/pkgs/G4/G4OSG/libsrc/EventHandler.cc
++++ b/src/simplebuild_dgcode/data/pkgs/G4/G4OSG/libsrc/EventHandler.cc
+@@ -10,6 +10,7 @@
+ #include <osg/ShapeDrawable>
+ #include <osg/Version>
+ #include "G4OSG/BestUnit.hh"
++#include <cmath>
+ 
+ G4OSG::EventHandler::EventHandler(Viewer*viewer)
+   : osgGA::GUIEventHandler(),
+@@ -358,7 +359,7 @@ bool G4OSG::EventHandler::handle(const osgGA::GUIEventAdapter& ea,
+ 
+     case(osgGA::GUIEventAdapter::RELEASE):
+       {
+-        if (std::abs<double>(ea.getX()-m_push_x)>1.0e-5||std::abs<double>(ea.getY()-m_push_y)>1.0e-5)
++        if (std::abs(ea.getX()-m_push_x)>1.0e-5||std::abs(ea.getY()-m_push_y)>1.0e-5)
+           return false;
+         m_push_x=m_push_y=-1e99;
+ 
+diff --git a/src/simplebuild_dgcode/data/pkgs/G4/G4OSG/libsrc/MeasurementPoints.cc b/src/simplebuild_dgcode/data/pkgs/G4/G4OSG/libsrc/MeasurementPoints.cc
+index 899e884..cc7de60 100644
+--- a/src/simplebuild_dgcode/data/pkgs/G4/G4OSG/libsrc/MeasurementPoints.cc
++++ b/src/simplebuild_dgcode/data/pkgs/G4/G4OSG/libsrc/MeasurementPoints.cc
+@@ -6,6 +6,7 @@
+ #include <osg/AutoTransform>
+ #include "CLHEP/Units/SystemOfUnits.h"
+ #include "G4OSG/BestUnit.hh"
++#include <cmath>
+ 
+ G4OSG::MeasurementPoints::MeasurementPoints(G4OSG::Viewer*v,osg::Group* sceneHook)
+   : m_isAttached(false),
+@@ -209,9 +210,9 @@ void G4OSG::MeasurementPoints::updateInfo()
+           //or distance info:
+           double dotp = pt1.normal * pt2.normal;
+           double costh = dotp / (pt1.normal.length()*pt2.normal.length());
+-          if (std::abs<double>(costh) < 1.0-1.0e-5) {
++          if (std::abs(costh) < 1.0-1.0e-5) {
+             //non-parallel surfaces
+-            printf("### %s-%s surface angle: %.10g deg\n",col1,col2,acos(std::abs<double>(costh))*180/M_PI);
++            printf("### %s-%s surface angle: %.10g deg\n",col1,col2,acos(std::abs(costh))*180/M_PI);
+           } else {
+             //parallel surfaces
+             printf("### %s-%s surfaces are parallel!\n",col1,col2);
+@@ -219,7 +220,7 @@ void G4OSG::MeasurementPoints::updateInfo()
+             //p1+n1*d intersects the (p2,n2) plane:
+             double d = (v2-v1) * pt2.normal/ dotp;
+             //The distance is then:
+-            double dist = std::abs<double>(d * pt1.normal.length());
++            double dist = std::abs(d * pt1.normal.length());
+             if (pt1.volHandle!=pt2.volHandle||dist>1.0e-3) {
+               std::string diststr = G4OSG::BestUnit(dist, "Length");
+               printf("### %s-%s dist between surface planes: %s\n",col1,col2,diststr.c_str());
+diff --git a/src/simplebuild_dgcode/data/pkgs/G4/G4Utils/libsrc/PolygonUtils.cc b/src/simplebuild_dgcode/data/pkgs/G4/G4Utils/libsrc/PolygonUtils.cc
+index f835dd4..4a28d83 100644
+--- a/src/simplebuild_dgcode/data/pkgs/G4/G4Utils/libsrc/PolygonUtils.cc
++++ b/src/simplebuild_dgcode/data/pkgs/G4/G4Utils/libsrc/PolygonUtils.cc
+@@ -1,5 +1,6 @@
+ #include "G4Utils/PolygonUtils.hh"
+ #include <cassert>
++#include <cmath>
+ 
+ double G4Utils::area(const Polygon& p)
+ {
+@@ -77,7 +78,7 @@ void G4Utils::growPolygon(const Polygon& orig,Polygon& result,const std::vector<
+ 
+     double det = normal_prev.x()*normal.y()-normal_prev.y()*normal.x();
+ 
+-    bool almost_parallel = std::abs<double>(det)<tolerance;
++    bool almost_parallel = std::abs(det)<tolerance;
+     if ( almost_parallel || (smooth_corners && det > 0) ) {
+       //Must add extra points for more rounded corner:
+       if (!almost_parallel)
+diff --git a/src/simplebuild_dgcode/data/pkgs/G4/IdealGasBuilder/libsrc/IdealGasMixture.cc b/src/simplebuild_dgcode/data/pkgs/G4/IdealGasBuilder/libsrc/IdealGasMixture.cc
+index 5ee7646..06333fe 100644
+--- a/src/simplebuild_dgcode/data/pkgs/G4/IdealGasBuilder/libsrc/IdealGasMixture.cc
++++ b/src/simplebuild_dgcode/data/pkgs/G4/IdealGasBuilder/libsrc/IdealGasMixture.cc
+@@ -9,6 +9,7 @@
+ #include <stdexcept>
+ #include <sstream>
+ #include <map>
++#include <cmath>
+ 
+ IdealGas::Mixture::Mixture(const char * formula)
+   : m_by_mass_fractions(false)
+@@ -202,7 +203,7 @@ G4Material * IdealGas::Mixture::buildMat(const char * name, double temp, double
+   double frac_tot = 0.0;
+   for (auto it = element2density.begin();it!=element2density.end();++it)
+     frac_tot += (it->second / density) * scale_e2d;
+-  assert(std::abs<double>(frac_tot-1.0)<1.0e-10);
++  assert(std::abs(frac_tot-1.0)<1.0e-10);
+ 
+   //Reorder in different map with element names as keys for reproducibility so
+   //order of addElement calls won't depend on pointer sorting (at least not when
+diff --git a/src/simplebuild_dgcode/data/pkgs_val/BoronTube/G4GeoBoronTube/pycpp_GeoBoronTube/geometry_module.cc b/src/simplebuild_dgcode/data/pkgs_val/BoronTube/G4GeoBoronTube/pycpp_GeoBoronTube/geometry_module.cc
+index e2497be..10656c6 100644
+--- a/src/simplebuild_dgcode/data/pkgs_val/BoronTube/G4GeoBoronTube/pycpp_GeoBoronTube/geometry_module.cc
++++ b/src/simplebuild_dgcode/data/pkgs_val/BoronTube/G4GeoBoronTube/pycpp_GeoBoronTube/geometry_module.cc
+@@ -34,6 +34,7 @@ PYTHON_MODULE( mod )
+ #include "G4IntersectionSolid.hh"
+ #include "G4Transform3D.hh"
+ #include "G4Vector3D.hh"
++#include <cmath>
+ 
+ //As an example, we put a spherical sample in front of a box representing a
+ //detector tube (using the Griff analysis to look for positions where neutrons
+@@ -110,7 +111,7 @@ G4VPhysicalVolume* GeoBoronTube::Construct()
+   const double incidence_angle = getParameterDouble("incidence_angle_deg")*Units::deg;
+   const double incidence_pos = getParameterDouble("incidence_position_cm")*Units::cm;
+ 
+-  double big_dimension = 1.1*(detbox_length+2*detbox_outer_radius+std::abs<double>(incidence_pos));
++  double big_dimension = 1.1*(detbox_length+2*detbox_outer_radius+std::abs(incidence_pos));
+ 
+   G4Box* solidWorld = new G4Box(physVolName_World(), 2*big_dimension,2*big_dimension,2*big_dimension);
+   auto worldvols = place(solidWorld,matWorld,0,0,0,0,colour_World());
+diff --git a/src/simplebuild_dgcode/data/pkgs_val/SkeletonSP/G4GeoSkeletonSP/pycpp_GeoSkeletonSP/geometry_module.cc b/src/simplebuild_dgcode/data/pkgs_val/SkeletonSP/G4GeoSkeletonSP/pycpp_GeoSkeletonSP/geometry_module.cc
+index 5da19cf..b1faf14 100644
+--- a/src/simplebuild_dgcode/data/pkgs_val/SkeletonSP/G4GeoSkeletonSP/pycpp_GeoSkeletonSP/geometry_module.cc
++++ b/src/simplebuild_dgcode/data/pkgs_val/SkeletonSP/G4GeoSkeletonSP/pycpp_GeoSkeletonSP/geometry_module.cc
+@@ -26,6 +26,7 @@ PYTHON_MODULE( mod )
+ 
+ #include "G4Box.hh"
+ #include "G4Orb.hh"
++#include <cmath>
+ 
+ //As an example, we put a spherical sample in front of a box representing a
+ //detector tube (using the Griff analysis to look for positions where neutrons
+@@ -72,7 +73,7 @@ G4VPhysicalVolume* GeoSkeletonSP::Construct()
+   auto mat_det = getMaterial("Vacuum");
+ 
+   //World volume (must be big enough for the sample and detector to fit inside):
+-  const double dz_world = 1.001 * ( std::abs<double>(sample_posz)
++  const double dz_world = 1.001 * ( std::abs(sample_posz)
+                                     + sample_radius+det_depth+det_sample_dist );
+   const double dxy_world = 1.001 * std::max<double>(0.5*det_size,sample_radius);
+   auto worldvols = place( new G4Box("World", dxy_world, dxy_world, dz_world),

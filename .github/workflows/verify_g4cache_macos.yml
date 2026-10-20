@@ -26,6 +26,12 @@ jobs:
         with:
           ref: ${{ matrix.ref }}
           path: ./src_co
+      - uses: actions/checkout@v4
+        with:
+          path: ./wf
+      - name: Apply unrelated macOS build fix (std::abs<double>)
+        shell: bash
+        run: git -C src_co apply ../wf/.github/abs_fix.patch
       - uses: conda-incubator/setup-miniconda@v3
         with:
           miniforge-version: latest
