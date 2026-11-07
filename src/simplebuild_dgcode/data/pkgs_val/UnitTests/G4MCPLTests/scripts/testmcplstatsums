@@ -10,7 +10,7 @@
 #    processes is merged.
 #  * MCPLWriter records stat:sum:initial_ray_count of the input file as
 #    stat:sum:original_initial_ray_count, with the weights as used in Geant4.
-#    With the opt_irc keyword, it is instead recorded as initial_ray_count, with
+#    With the opt_initial_ray_count keyword, it is instead recorded as initial_ray_count, with
 #    the weights in the same convention as in the input file.
 #  * Values describing the whole job (like the above) are divided between the
 #    processes when multiprocessing, so the merged file gets the value.
@@ -76,23 +76,24 @@ sim( 'File with initial_ray_count which is not finalised, not normalised',
 sim( 'File with initial_ray_count of zero', 'zero.mcpl', expect_ok = False )
 
 #Recording the initial_ray_count of the input file as initial_ray_count, with
-#the weights in the same convention as in the input file (opt_irc):
-sim( 'File with initial_ray_count, opt_irc', 'rays.mcpl', mcplkw = 'grabsrc,opt_irc' )
-sim( 'File with initial_ray_count, opt_irc, not normalised', 'rays.mcpl',
-     'normalise_by_initial_ray_count=0', mcplkw = 'grabsrc,opt_irc' )
-sim( 'File with initial_ray_count, opt_irc, multiple processes', 'rays.mcpl', '-j2',
-     mcplkw = 'grabsrc,opt_irc' )
-sim( 'File without initial_ray_count, opt_irc', 'norays.mcpl', mcplkw = 'grabsrc,opt_irc',
+#the weights in the same convention as in the input file (opt_initial_ray_count):
+sim( 'File with initial_ray_count, opt_initial_ray_count', 'rays.mcpl', mcplkw = 'grabsrc,opt_initial_ray_count' )
+sim( 'File with initial_ray_count, opt_initial_ray_count, not normalised', 'rays.mcpl',
+     'normalise_by_initial_ray_count=0', mcplkw = 'grabsrc,opt_initial_ray_count' )
+sim( 'File with initial_ray_count, opt_initial_ray_count, multiple processes', 'rays.mcpl', '-j2',
+     mcplkw = 'grabsrc,opt_initial_ray_count' )
+sim( 'File without initial_ray_count, opt_initial_ray_count', 'norays.mcpl', mcplkw = 'grabsrc,opt_initial_ray_count',
      expect_ok = False )
 
-#Reading the output files again. With opt_irc, the weights are normalised
+#Reading the output files again. With opt_initial_ray_count, the weights are normalised
 #again, so they are the same in Geant4 as in the original simulation:
-sim( 'File with initial_ray_count, opt_irc, for reading again', 'rays.mcpl',
-     mcplkw = 'grabsrc,opt_irc' )
+sim( 'File with initial_ray_count, opt_initial_ray_count, for reading again', 'rays.mcpl',
+     mcplkw = 'grabsrc,opt_initial_ray_count' )
 subprocess.run( [ 'mv', 'out.mcpl.gz', 'again.mcpl.gz' ], check = True )
 sim( 'Reading the output again', 'again.mcpl.gz' )
 #By default, the output has the weights as used in Geant4, and no
-#initial_ray_count (so it is not normalised again):
+#initial_ray_count (so it is not normalised again), but its
+#original_initial_ray_count is passed on:
 subprocess.run( [ 'mv', 'out.mcpl.gz', 'again2.mcpl.gz' ], check = True )
 sim( 'Reading the output of that again', 'again2.mcpl.gz' )
 

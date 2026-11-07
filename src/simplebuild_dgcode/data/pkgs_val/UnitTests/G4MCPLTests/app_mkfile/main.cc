@@ -18,12 +18,12 @@ int main( int argc, char** argv )
     printf("Usage: %s FILENAME NPARTICLES WEIGHT INITIAL_RAY_COUNT\n",argv[0]);
     return 1;
   }
-  const char * irc = argv[4];
+  const char * initial_ray_count_arg = argv[4];
   mcpl_outfile_t f = mcpl_create_outfile( argv[1] );
   mcpl_hdr_set_srcname( f, "sb_g4mcpltests_mkfile" );
-  if ( std::strcmp( irc, "none" ) != 0 )
+  if ( std::strcmp( initial_ray_count_arg, "none" ) != 0 )
     mcpl_hdr_add_stat_sum( f, "initial_ray_count",
-                           std::strcmp( irc, "notfinal" ) == 0 ? -1.0 : std::atof( irc ) );
+                           std::strcmp( initial_ray_count_arg, "notfinal" ) == 0 ? -1.0 : std::atof( initial_ray_count_arg ) );
   mcpl_particle_t * p = mcpl_get_empty_particle( f );
   const int n = std::atoi( argv[2] );
   for ( int i = 0; i < n; ++i ) {

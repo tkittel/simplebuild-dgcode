@@ -118,14 +118,16 @@ or when merging the output of multiple processes):
   divided by this value is an efficiency.
 * ``stat:sum:original_initial_ray_count``: The ``stat:sum:initial_ray_count``
   value of the input file read with MCPLGen (if it has one). This is for
-  reference only: the weights in the file are the weights used in Geant4.
+  reference only: the weights in the file are the weights used in Geant4. When
+  such a file is used as input again, the value is passed on to the new output
+  files.
 
 The ``stat:sum:initial_ray_count`` convention of instrument simulations like
 McStas (see above) assumes that each particle in a file is an independent ray.
 This is usually not the case for files written by Geant4, where a single event
 can produce several (correlated) particles. Therefore Geant4 output files do not
 claim the convention by default. If it is appropriate for your use case, the
-``opt_irc`` keyword of ``--mcpl`` (or ``setWriteInitialRayCount(True)`` on an
+``opt_initial_ray_count`` keyword of ``--mcpl`` (or ``setWriteInitialRayCount(True)`` on an
 ``MCPLWriter``) instead records the value of the input file as
 ``stat:sum:initial_ray_count``, and writes the weights in the same convention as
 in the input file (i.e. multiplied by the value if MCPLGen divided the weights by

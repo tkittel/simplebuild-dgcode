@@ -13,6 +13,8 @@ namespace G4MCPL {
       bool present = false;
       double initial_ray_count = -1.0;
       double weight_factor = 1.0;
+      bool original_present = false;
+      double original_initial_ray_count = -1.0;
     };
     InputInfo& inputInfo()
     {
@@ -60,6 +62,20 @@ void G4MCPL::setInputInitialRayCount( double initial_ray_count, double weight_fa
   info.initial_ray_count = initial_ray_count;
   info.weight_factor = weight_factor;
 }
+
+void G4MCPL::setInputOriginalInitialRayCount( double value )
+{
+  if ( !( value > 0.0 ) || !std::isfinite(value) )
+    value = -1.0;//not available
+  auto& info = inputInfo();
+  if ( info.original_present )
+    throw std::runtime_error("G4MCPL: The original_initial_ray_count of an input file was already set");
+  info.original_present = true;
+  info.original_initial_ray_count = value;
+}
+
+bool G4MCPL::hasInputOriginalInitialRayCount() { return inputInfo().original_present; }
+double G4MCPL::inputOriginalInitialRayCount() { return inputInfo().original_initial_ray_count; }
 
 bool G4MCPL::hasInputInitialRayCount() { return inputInfo().present; }
 double G4MCPL::inputInitialRayCount() { return inputInfo().initial_ray_count; }

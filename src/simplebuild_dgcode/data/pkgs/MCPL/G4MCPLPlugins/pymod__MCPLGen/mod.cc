@@ -64,7 +64,8 @@ private:
   HepGeom::Transform3D m_rotation;
   bool m_allow_zero_weight;
   double m_weight_scale;//factor applied to all weights in the file
-  mutable double m_input_irc;//cache for inputInitialRayCount() (NaN if not loaded)
+  mutable double m_input_initial_ray_count;//cache for inputInitialRayCount() (NaN if not loaded)
+  mutable double m_input_original_initial_ray_count;//stat:sum:original_initial_ray_count of the input file
   bool m_registered_output_stat_sums;
 };
 
@@ -78,7 +79,8 @@ MCPLGen::MCPLGen()
     m_has_polarisation(false),
     m_allow_zero_weight(false),
     m_weight_scale(1.0),
-    m_input_irc(std::nan("")),
+    m_input_initial_ray_count(std::nan("")),
+    m_input_original_initial_ray_count(-2.0),
     m_registered_output_stat_sums(false)
 {
   m_mcplfile.internal = 0;
@@ -171,9 +173,14 @@ void MCPLGen::register_output_stat_sums()
     return;
   m_registered_output_stat_sums = true;
   const double nrays = inputInitialRayCount();
-  if (nrays == -2.0)
-    return;//not present
-  G4MCPL::setInputInitialRayCount( nrays, inputWeightFactor() );
+  if (nrays != -2.0) {
+    G4MCPL::setInputInitialRayCount( nrays, inputWeightFactor() );
+  } else if (m_input_original_initial_ray_count != -2.0) {
+    //An input file written by MCPLWriter without the initial_ray_count
+    //convention (its weights are used as stored), but which records the
+    //initial_ray_count of an earlier input file. Pass it on (for reference):
+    G4MCPL::setInputOriginalInitialRayCount( m_input_original_initial_ray_count );
+  }
 }
 
 void MCPLGen::init()
@@ -224,18 +231,21 @@ std::string MCPLGen::resolved_input_file() const
 
 double MCPLGen::inputInitialRayCount() const
 {
-  if (std::isnan(m_input_irc)) {
+  if (std::isnan(m_input_initial_ray_count)) {
+    //(also reads stat:sum:original_initial_ray_count):
     if (m_mcplfile.internal) {
-      m_input_irc = mcpl_hdr_stat_sum(m_mcplfile,"initial_ray_count");
+      m_input_initial_ray_count = mcpl_hdr_stat_sum(m_mcplfile,"initial_ray_count");
+      m_input_original_initial_ray_count = mcpl_hdr_stat_sum(m_mcplfile,"original_initial_ray_count");
     } else {
       //Only read the header (the file is opened for reading the particles
       //later, after any fork() when multiprocessing):
       mcpl_file_t f = mcpl_open_file(resolved_input_file().c_str());
-      m_input_irc = mcpl_hdr_stat_sum(f,"initial_ray_count");
+      m_input_initial_ray_count = mcpl_hdr_stat_sum(f,"initial_ray_count");
+      m_input_original_initial_ray_count = mcpl_hdr_stat_sum(f,"original_initial_ray_count");
       mcpl_close_file(f);
     }
   }
-  return m_input_irc;
+  return m_input_initial_ray_count;
 }
 
 double MCPLGen::inputWeightFactor() const

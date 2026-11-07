@@ -9,8 +9,9 @@
 //G4MCPLPlugins/MCPLWriter:
 //
 //  * stat:sum values to add to all its output files (e.g. from user code).
-//  * the stat:sum:initial_ray_count of an MCPL input file (set by
-//    G4MCPLPlugins/MCPLGen), which MCPLWriter records in its output files.
+//  * the stat:sum:initial_ray_count (or stat:sum:original_initial_ray_count)
+//    of an MCPL input file (set by G4MCPLPlugins/MCPLGen), which MCPLWriter
+//    records in its output files.
 //
 //Since MCPL requires the same header entries in all files to merge them (e.g.
 //the files of the processes of multi-process jobs), the information must be
@@ -52,6 +53,14 @@ namespace G4MCPL {
   bool hasInputInitialRayCount();
   double inputInitialRayCount();
   double inputWeightFactor();
+
+  //The stat:sum:original_initial_ray_count value of an MCPL input file without
+  //stat:sum:initial_ray_count (i.e. a file written by MCPLWriter, see its
+  //documentation), which MCPLWriter records again in its output files (for
+  //reference only). Positive, or -1 if not available. Set by MCPLGen:
+  void setInputOriginalInitialRayCount( double original_initial_ray_count );
+  bool hasInputOriginalInitialRayCount();
+  double inputOriginalInitialRayCount();
 
 }
 

@@ -146,6 +146,7 @@ namespace G4MCPLWriter {
         m_comments_and_blobs(comments_and_blobs),
         m_evtstats(evtstats),
         m_opt_writeinitialraycount(writeinitialraycount),
+        m_initial_ray_count_value(-1.0),
         m_weight_factor(1.0)
     {
       std::memset(&m_p,0,sizeof(m_p));
@@ -188,8 +189,8 @@ namespace G4MCPLWriter {
         //(in the same convention as the weights in the file):
         mcpl_hdr_add_stat_sum(m_f,"initial_geant4_weights",m_evtstats->sumWeights()*m_weight_factor);
       }
-      if (!m_irc_key.empty())
-        mcpl_hdr_add_stat_sum(m_f,m_irc_key.c_str(),wholeJobValue(G4MCPL::inputInitialRayCount()));
+      if (!m_initial_ray_count_key.empty())
+        mcpl_hdr_add_stat_sum(m_f,m_initial_ray_count_key.c_str(),wholeJobValue(m_initial_ray_count_value));
       for ( auto& e : m_statsums ) {
         const double value = e.value();
         mcpl_hdr_add_stat_sum(m_f,e.key.c_str(),
@@ -356,14 +357,23 @@ namespace G4MCPLWriter {
       //convention assumes that each particle is an independent ray, which is
       //for the user to decide. The space for the values is reserved here, and
       //the values are set when the file is closed:
-      m_irc_key.clear();
+      m_initial_ray_count_key.clear();
+      m_initial_ray_count_value = -1.0;
       m_weight_factor = 1.0;
       if ( G4MCPL::hasInputInitialRayCount() ) {
-        m_irc_key = ( m_opt_writeinitialraycount ? "initial_ray_count" : "original_initial_ray_count" );
+        m_initial_ray_count_key = ( m_opt_writeinitialraycount ? "initial_ray_count" : "original_initial_ray_count" );
+        m_initial_ray_count_value = G4MCPL::inputInitialRayCount();
         if ( m_opt_writeinitialraycount )
           m_weight_factor = 1.0 / G4MCPL::inputWeightFactor();
-        mcpl_hdr_add_stat_sum(m_f,m_irc_key.c_str(),-1.0);
+      } else if ( G4MCPL::hasInputOriginalInitialRayCount() ) {
+        //The input file was itself written by MCPLWriter, without the
+        //convention, and records the initial_ray_count of an earlier input
+        //file: pass it on (for reference):
+        m_initial_ray_count_key = "original_initial_ray_count";
+        m_initial_ray_count_value = G4MCPL::inputOriginalInitialRayCount();
       }
+      if ( !m_initial_ray_count_key.empty() )
+        mcpl_hdr_add_stat_sum(m_f,m_initial_ray_count_key.c_str(),-1.0);
 
       //Values added by other components or user code:
       m_statsums = G4MCPL::outputStatSums();
@@ -395,7 +405,8 @@ namespace G4MCPLWriter {
     EventStatsPtr m_evtstats;
     std::vector<G4MCPL::OutputStatSum> m_statsums;
     bool m_opt_writeinitialraycount;
-    std::string m_irc_key;
+    std::string m_initial_ray_count_key;
+    double m_initial_ray_count_value;
     double m_weight_factor;
 
     static double wholeJobValue( double value )
